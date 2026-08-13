@@ -18,12 +18,13 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# Enable CORS for frontend connection
+# ---------- CORS CONFIGURATION -----------
+# Allows your GitHub Pages frontend to communication with Render backend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["*"],  # Allows all origins (or specify your github.io URL)
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["*"],  # Allows GET, POST, OPTIONS, etc.
     allow_headers=["*"],
 )
 
