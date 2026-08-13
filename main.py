@@ -58,23 +58,54 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
     return {"access_token": access_token, "token_type": "bearer"}
 
 # --- PRODUCT ENDPOINTS ---
-@app.get("/products", response_model=List[schemas.ProductResponse])
+@app.get("/products", response_model=List[schemas.Product])
 def get_products(db: Session = Depends(get_db)):
     products = db.query(models.Product).all()
     
-    # Auto-seed initial products if DB is empty
+    # If database is empty, seed initial products
     if not products:
         sample_products = [
-            models.Product(title="Wireless Noise-Canceling Headphones", description="High fidelity audio with 30hr battery life.", price=199.99, category="Electronics", image_url="https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500"),
-            models.Product(title="Smart Fitness Watch", description="Track workouts, heart rate, and sleep quality.", price=129.50, category="Electronics", image_url="https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500"),
-            models.Product(title="Classic Leather Backpack", description="Durable handcrafted leather laptop bag.", price=89.99, category="Fashion", image_url="https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=500"),
-            models.Product(title="Ergonomic Desk Chair", description="Breathable mesh back with lumber support.", price=249.00, category="Furniture", image_url="https://images.unsplash.com/photo-1580481072645-022f9a6d1270?w=500&q=80")
+            models.Product(
+                title="Wireless Noise-Canceling Headphones",
+                description="High fidelity audio with 30hr battery life.",
+                price=199.99,
+                category="Electronics",
+                image_url="https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500&q=80"
+            ),
+            models.Product(
+                title="Smart Fitness Watch",
+                description="Track workouts, heart rate, and sleep quality.",
+                price=129.50,
+                category="Electronics",
+                image_url="https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500&q=80"
+            ),
+            models.Product(
+                title="Classic Leather Backpack",
+                description="Durable handcrafted leather laptop bag.",
+                price=89.99,
+                category="Fashion",
+                image_url="https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=500&q=80"
+            ),
+            models.Product(
+                title="Ergonomic Desk Chair",
+                description="Breathable mesh back with lumbar support.",
+                price=249.00,
+                category="Furniture",
+                image_url="https://images.unsplash.com/photo-1580481072645-022f9a6d1270?w=500&q=80"
+            ),
         ]
         db.add_all(sample_products)
         db.commit()
         products = db.query(models.Product).all()
-        
+    else:
+        # Force update broken image URL for chair if present
+        for p in products:
+            if "Desk Chair" in p.title:
+                p.image_url = "https://images.unsplash.com/photo-1580481072645-022f9a6d1270?w=500&q=80"
+        db.commit()
+
     return products
+
 
 @app.post("/products", response_model=schemas.ProductResponse, status_code=status.HTTP_201_CREATED)
 def create_product(product: schemas.ProductCreate, db: Session = Depends(get_db), current_user: models.User = Depends(auth.get_current_user)):
