@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" ?>
+    <title>ShopSphere | E-Commerce Storefront</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-gray-50 font-sans text-gray-800 antialiased">
+
+    <!-- Navigation Bar -->
+    <nav class="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100 shadow-sm">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <div class="bg-indigo-600 text-white p-2 rounded-xl">
+            <i data-lucide="shopping-bag" class="w-6 h-6"></i>
+          </div>
+          <span class="text-xl font-bold bg-gradient-to-r from-indigo-600 to-violet-600 bg-clip-text text-transparent">
+            ShopSphere
+          </span>
+        </div>
+
+        <div id="authStatus" class="flex items-center gap-3">
+          <!-- Auth buttons injected via JavaScript -->
+        </div>
+      </div>
+    </nav>
+
+    <!-- Hero Header -->
+    <header class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 text-center">
+      <h1 class="text-4xl font-extrabold text-gray-900 tracking-tight sm:text-5xl">
+        Discover Next-Gen Products
+      </h1>
+      <p class="mt-3 max-w-2xl mx-auto text-lg text-gray-500">
+        Connected live to your FastAPI REST Backend hosted on Render.
+      </p>
+    </header>
+
+    <!-- Product Grid Section -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
+      <div class="flex items-center justify-between mb-8">
+        <h2 class="text-2xl font-bold text-gray-900">Featured Products</h2>
+        <span id="productCount" class="text-sm font-medium text-gray-500 bg-gray-200 px-3 py-1 rounded-full">
+          Loading...
+        </span>
+      </div>
+
+      <!-- Product Cards Container -->
+      <div id="productGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-16">
+        <!-- Dynamic JavaScript Content -->
+      </div>
+    </main>
+
+    <!-- Login Modal -->
+    <div id="loginModal" class="hidden fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+      <div class="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl relative">
+        <button onclick="toggleModal('loginModal')" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+        <h3 class="text-2xl font-bold text-gray-900 mb-4">Account Login</h3>
+        <form id="loginForm" class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Email Address</label>
+            <input type="email" id="loginEmail" required class="mt-1 w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="user@example.com">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Password</label>
+            <input type="password" id="loginPassword" required class="mt-1 w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="........">
+          </div>
+          <button type="submit" class="w-full bg-indigo-600 text-white py-2.5 rounded-xl font-semibold hover:bg-indigo-700 transition">
+            Sign In
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- JavaScript Integration -->
+    <script>
+      //🔗API BASE URL - Points to your Render server
+      const API_URL = "https://shopsphere-ecommerce-api.onrender.com";
+
+      // Initialize Lucide icons
+      lucide.createIcons();
+
+      //Toggle Modal Helper
+      function toggleModal(modalId) {
+        document.getElementById(modalId).classList.toggle('hidden');
+      }
+
+      //Fetch Products from API
+      async function loadProducts() {
+        const grid = document.getElementById('productGrid');
+        const count = document.getElementById('productCount');
+
+        try {
+          const res = await fetch(`${API_URL}/products`);
+          const products = await res.json();
+
+          count.textContent = `${products.length} Products Avaailable`;
+          grid.innerHTML = products.map(p => `
+            <div class="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition duration-200 overflow-hidden flex flex-col">
+              <img src="${p.image_url}" alt="${p.title}" class="h-48 w-full object-cover">
+              <div class="p-5 flex-1 flex flex-col justify-between">
+                <div>
+                <span class="text-xs font-semibold tracking-wider text-indigo-600 uppercase">${p.category}</span>
+                <h3 class="text-lg font-bold text-gray-900 mt-1">${p.title}</h3>
+                <p class="text-gray-500 text-sm mt-1 line-clamp-2">${p.description}</p>
+              </div>
+              <div class="mt-4 flex items-center justify-between">
+                <span class="text-xl font-black text-gray-900">$${p.price.toFixed(2)}</span>
+                <button onclick="addToCart('${p.title}')" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-600 px-3 py-2 rounded-xl text-sm font-semibold flex items-center gap-1 transition">
+                  <i data-lucide="shopping-cart" class="w-4 h-4"></i> Add
+                </button>
+              </div>
+            </div>
+          </div>
+          `).join('');
+          lucide.createIcons();
+        } catch (err) {
+          grid.innerHTML = `<p class="col-span-full text-center text-red-500 font-medium py-12">Failed to connect to backend server. Make sure Render service is live.</p>`;
+        }
+      }
+
+      // Check Auth State
+      function checkAuth() {
+        const token = localStorage.getItem('access_token');
+        const authDiv = document.getElementById('authStatus');
+
+        if (token) {
+          authDiv.innerHTML = `
+            <span class="text-sm font-medium text-green-600 bg-green-50 px-3 py-1.5 rounded-xl border border-green-200 flex items-center gap-1">
+              <i data-lucide="check-circle" class="w-4 h-4"></i> Authenticated
+            </span>
+            <button onclick="logout()" class="text-sm font-semibold text-gray-600 transition">
+              Logout
+            </button>
+          `;
+        } else {
+          authDiv.innerHtml = `
+          <button onclick="toggleModal('loginModal')" class="bg-indigo-600 text-white text-sm px-4 py-2 rounded-xl font-semibold hover:bg-indigo-700 transition">
+            Sign In
+          </button>
+          `;
+        }
+        lucide.createIcons();
+      }
+
+      //Login Handler
+      document.getElementById('loginForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('loginEmail').value;
+        const password = document.getElementById('loginPassword').value;
+
+        const formData = new URLSearchParams();
+        formData.append('username', email);
+        formData.append('password', password);
+
+        try {
+          const res = await fetch(`#{API_URL}/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: formData
+          });
+
+          if (res.ok) {
+            const data = await res.json();
+            localStorage.setItem('access_token', data.access_token);
+            toggleModal('loginModal');
+            checkAuth();
+            alert('Login Successful!');
+          } else {
+            alert('Invalid login credentials. Register first in Swagger /docs!');
+          }
+        } catch (err) {
+          alert('Error connecting to authentication service.');
+        }
+      });
+
+      function logout() {
+        localStorage.removeItem('access_token');
+        checkAuth();
+      }
+
+      function addToCart(item) {
+        alert(`Added ${item} to cart!`);
+      }
+
+      // Init App
+      loadProducts();
+      checkAuth();
+    </script>
+  </body>
+</html>
