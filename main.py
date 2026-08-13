@@ -68,7 +68,7 @@ def get_products(db: Session = Depends(get_db)):
             models.Product(title="Wireless Noise-Canceling Headphones", description="High fidelity audio with 30hr battery life.", price=199.99, category="Electronics", image_url="https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500"),
             models.Product(title="Smart Fitness Watch", description="Track workouts, heart rate, and sleep quality.", price=129.50, category="Electronics", image_url="https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500"),
             models.Product(title="Classic Leather Backpack", description="Durable handcrafted leather laptop bag.", price=89.99, category="Fashion", image_url="https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=500"),
-            models.Product(title="Ergonomic Desk Chair", description="Breathable mesh back with lumber support.", price=249.00, category="Furniture", image_url="https://images.unsplash.com/photo-1580481072645-022f9a6d1270?w=500")
+            models.Product(title="Ergonomic Desk Chair", description="Breathable mesh back with lumber support.", price=249.00, category="Furniture", image_url="https://images.unsplash.com/photo-1580481072645-022f9a6d1270?w=500&q=80")
         ]
         db.add_all(sample_products)
         db.commit()
